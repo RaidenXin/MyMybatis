@@ -1,10 +1,12 @@
-package com.test;
+package com.huihuang.test;
 
-import com.huihuang.mapper.UserMapper;
-import com.huihuang.model.User;
+import com.huihuang.annotation.MyParam;
+import com.huihuang.mapper.BaseMapper;
+import test.User;
 import com.huihuang.session.SqlSessionManager;
 import org.junit.jupiter.api.Test;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -36,10 +38,19 @@ public class TestJdbcUtils {
 
     @Test
     public void testList() {
-        UserMapper userMapper = (UserMapper) SqlSessionManager.getMapper();
-        List<User> userList = userMapper.select(new User());
-        for (User user : userList){
-            System.err.println(user);
+        Class clazz = BaseMapper.class;
+        Method[] methods = clazz.getDeclaredMethods();
+        for (Method method : methods) {
+            System.err.println(method.getName());
+            Annotation[][] parameterAnnotations = method.getParameterAnnotations();
+            System.err.println(parameterAnnotations.length);
+            for (Annotation[] as : parameterAnnotations) {
+                for (Annotation a : as) {
+                    MyParam param = (MyParam) a;
+                    System.err.println(param.value());
+                }
+            }
+            System.err.println();
         }
     }
 
