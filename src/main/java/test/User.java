@@ -1,4 +1,4 @@
-package com.huihuang.model;
+package test;
 
 public class User {
 

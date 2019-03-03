@@ -5,5 +5,9 @@ import java.util.Map;
 
 public interface MySqlSession {
 
-    public <T> List<T> select(Object o);
+    public <T> T execute(Class<?> returnType,String className,Object o) throws ClassNotFoundException, Throwable;
+
+    public <T> T execute(Class<?> returnType,String className,Map<String, Object> map) throws Throwable;
+
+    public <T> T execute(Class<?> returnType,String className,String sql) throws Throwable;
 }

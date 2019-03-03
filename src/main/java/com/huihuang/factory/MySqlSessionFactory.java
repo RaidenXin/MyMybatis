@@ -1,4 +1,4 @@
-package com.huihuang.session.factory;
+package com.huihuang.factory;
 
 import com.huihuang.session.MyDefaultSqlSession;
 import com.huihuang.session.MySqlSession;
