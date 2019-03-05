@@ -42,25 +42,13 @@ public class SqlSessionManager {
         public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
             MySqlSession session = MySqlSessionFactory.openSession();
             Class<?> returnType = method.getReturnType();
+            String sql = StringUtils.EMPTY;
+            Object object = args[0];
             if (method.isAnnotationPresent(Myinsert.class)){
-
-            }
-            if (args.length == 1){
-                Object param = args[0];
-                if (param instanceof Map){
-                    return session.execute(returnType, clazzName, (Map) param);
-                }else if (clazzName.equals(param.getClass().getName())){
-                    return session.execute(returnType, clazzName, param);
-                }
-            }else if (args.length > 1){
-                return session.execute(returnType, clazzName, parameterMapping2Map(method, args));
+                Myinsert myinsert = method.getDeclaredAnnotation(Myinsert.class);
+                sql = myinsert.value();
             }
             return session.execute(returnType, clazzName, args[0]);
-        }
-
-        private String createSql(Method method){
-            Myinsert annotation = method.getAnnotation(Myinsert.class);
-            return null;
         }
 
         private Map<String, Object> parameterMapping2Map(Method method,Object[] args){

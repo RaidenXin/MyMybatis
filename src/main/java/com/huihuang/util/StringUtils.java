@@ -2,6 +2,8 @@ package com.huihuang.util;
 
 public class StringUtils {
 
+    public static final String EMPTY = "";
+
     public static final String transformationOfFieldName(String filedName){
         char[] chars = filedName.toCharArray();
         StringBuilder builder = new StringBuilder();
