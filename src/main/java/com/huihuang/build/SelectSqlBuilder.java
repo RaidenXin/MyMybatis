@@ -1,19 +1,15 @@
 package com.huihuang.build;
 
 import com.huihuang.util.ObjectUtils;
+import com.huihuang.util.SqlUtils;
+import com.huihuang.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public final class SelectSqlBuilder {
+public final class SelectSqlBuilder extends  SqlBuilder{
 
-    private static final String BLANK_SPACE = " ";
-    private static final String AND = "AND";
-    private static final String WHERE = "WHERE";
-
-    public static final String createSql(Map<String, Object> param,String sql){
-        return sql;
-    }
-
+    private static final Map<String, Map<String, Object>> classMappingMaps = new HashMap<>();
 
     public static final String createSql(Object o){
         Map<String, Object> map = ObjectUtils.object2Map(o);
@@ -22,29 +18,50 @@ public final class SelectSqlBuilder {
 
     public static final String createSql(Map<String, Object> map,Object o){
         Map<String, Object> objectMap = ObjectUtils.object2Map(o);
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            objectMap.put(entry.getKey(), entry.getValue());
+        StringBuilder builder = new StringBuilder(createSelectSql(objectMap));
+        if (!map.isEmpty()){
+            builder.append(WHERE);
+            int i = 0;
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                if (null != entry.getValue()){
+                    if (i != 0){
+                        builder.append(BLANK_SPACE);
+                        builder.append(AND);
+                        i++;
+                    }
+                    builder.append(BLANK_SPACE);
+                    builder.append(entry.getKey());
+                    builder.append(BLANK_SPACE);
+                    builder.append("=");
+                    builder.append(BLANK_SPACE);
+                    builder.append("'");
+                    builder.append(ObjectUtils.object2String(entry.getValue()));
+                    builder.append("'");
+                }
+            }
         }
-        return createSelectSql(objectMap);
+        return builder.toString();
     }
+
 
     private static String createSelectSql(Map<String, Object> map){
         StringBuilder builder = new StringBuilder("SELECT");
         StringBuilder condition = new StringBuilder(WHERE);
-        condition.append(BLANK_SPACE);
-        boolean flag = true;
+        int i = 0,j = 0;
         for (Map.Entry<String, Object> e : map.entrySet()) {
-            if (flag){
-                flag = false;
-            }else {
+            if (i != 0){
                 builder.append(",");
+                i++;
             }
             Object object = e.getValue();
-            String key = e.getKey();
+            String key = SqlUtils.transformationOfFieldName(e.getKey());
             builder.append(key);
             if (null != object){
-                condition.append(BLANK_SPACE);
-                condition.append(AND);
+                if (j != 0){
+                    condition.append(BLANK_SPACE);
+                    condition.append(AND);
+                    j++;
+                }
                 condition.append(BLANK_SPACE);
                 condition.append(key);
                 condition.append(BLANK_SPACE);

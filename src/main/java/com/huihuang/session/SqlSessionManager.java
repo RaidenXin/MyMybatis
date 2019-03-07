@@ -1,9 +1,11 @@
 package com.huihuang.session;
 
 import com.huihuang.annotation.MyParam;
+import com.huihuang.annotation.MySelect;
 import com.huihuang.annotation.Myinsert;
 import com.huihuang.mapper.BaseMapper;
 import com.huihuang.factory.MySqlSessionFactory;
+import com.huihuang.util.SqlUtils;
 import com.huihuang.util.StringUtils;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
@@ -16,8 +18,8 @@ import java.util.Map;
 
 public class SqlSessionManager {
 
-    public static BaseMapper getMapper(Class<?> clazz){
-        return (BaseMapper) getInstance(clazz);
+    public static <T> T getMapper(Class<T> clazz){
+        return (T) getInstance(clazz);
     }
 
     private static Object getInstance(Class<?> clazz) {
@@ -42,13 +44,17 @@ public class SqlSessionManager {
         public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
             MySqlSession session = MySqlSessionFactory.openSession();
             Class<?> returnType = method.getReturnType();
-            String sql = StringUtils.EMPTY;
-            Object object = args[0];
             if (method.isAnnotationPresent(Myinsert.class)){
-                Myinsert myinsert = method.getDeclaredAnnotation(Myinsert.class);
-                sql = myinsert.value();
+                //TODO 还未完成
+            }else if (method.isAnnotationPresent(MySelect.class)){
+                MySelect mySelect = method.getDeclaredAnnotation(MySelect.class);
+                if (args.length == 1){
+                    return session.doQuery(returnType, clazzName, mySelect.value(), args[0]);
+                }else {
+                    return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args));
+                }
             }
-            return session.execute(returnType, clazzName, args[0]);
+            return new RuntimeException();
         }
 
         private Map<String, Object> parameterMapping2Map(Method method,Object[] args){
@@ -58,7 +64,7 @@ public class SqlSessionManager {
             for (Annotation[] annotations : parameterAnnotations) {
                 for (Annotation annotation : annotations) {
                     MyParam param = (MyParam) annotation;
-                    paramMap.put(StringUtils.transformationOfFieldName(param.value()), args[++index]);
+                    paramMap.put(SqlUtils.transformationOfFieldName(param.value()), args[++index]);
                 }
             }
             return paramMap;

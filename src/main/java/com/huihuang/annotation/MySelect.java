@@ -5,6 +5,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-@interface MySelect {
+public @interface MySelect {
     String value() default "";
 }

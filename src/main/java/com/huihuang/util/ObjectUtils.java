@@ -27,7 +27,7 @@ public final class ObjectUtils {
         Map<String, Object> result = new HashMap<>();
         for (Field field : fields) {
             field.setAccessible(true);
-            String key = StringUtils.transformationOfFieldName(field.getName());
+            String key = field.getName();
             try{
                 result.put(key, field.get(o));
             }catch (Exception e){

@@ -1,5 +1,6 @@
 package com.huihuang.session;
 
+import com.huihuang.build.SelectSqlBuilder;
 import com.huihuang.executor.BaseExecutor;
 import com.huihuang.executor.Executor;
 import com.huihuang.util.ObjectUtils;
@@ -22,14 +23,20 @@ public class MyDefaultSqlSession implements MySqlSession {
     private static Executor executor = new BaseExecutor();
 
     @Override
-    public <T> T execute(Class<?> returnType, String className, String sql,Object[] args) throws Throwable {
-        if (args.length > 0 ){
-            Object object = args[0];
-            if (object instanceof Map){
-
-            }
+    public <T> T doQuery(Class<?> returnType,String className,String sql,Object param) throws Throwable {
+        if (param instanceof Map){
+            sql = SelectSqlBuilder.setParam((Map) param, sql);
+            return executor.doQuery(returnType, sql, className);
+        }else if (param.getClass().getName().equals(className)){
+            sql = SelectSqlBuilder.setParam(param, sql);
+            return executor.doQuery(returnType, sql, className);
         }
         return executor.doQuery(returnType, sql, className);
+    }
+
+    @Override
+    public <T> T doInsert(Class<?> returnType, String className, String sql, Object param) throws Throwable {
+        return null;
     }
 
 }

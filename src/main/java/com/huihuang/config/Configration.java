@@ -14,7 +14,6 @@ public class Configration {
     private String url;
     private String userName;
     private String password;
-    private String mapperPath;
     private String poolName = "thread01";// 连接池名字
     private int minConnections = 1; // 空闲池，最小连接数
     private int maxConnections = 10; // 空闲池，最大连接数
@@ -35,7 +34,6 @@ public class Configration {
         this.url = properties.getProperty("jdbc.url");
         this.userName = properties.getProperty("jdbc.user");
         this.password = properties.getProperty("jdbc.password");
-        this.password = properties.getProperty("mapper.path");
         if (null != properties.getProperty("poolName")){
             this.poolName = properties.getProperty("poolName");
         }
