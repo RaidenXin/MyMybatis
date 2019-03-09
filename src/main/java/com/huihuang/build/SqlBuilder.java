@@ -9,6 +9,7 @@ public abstract class SqlBuilder {
     protected static final String BLANK_SPACE = " ";
     protected static final String AND = "AND";
     protected static final String WHERE = "WHERE";
+    protected static final String FROM = "FROM";
 
     public static final String setParam(Object object, String sql){
         Map<String, Object> param = ObjectUtils.object2Map(object);

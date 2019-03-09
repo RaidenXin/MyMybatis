@@ -24,19 +24,24 @@ public class MyDefaultSqlSession implements MySqlSession {
 
     @Override
     public <T> T doQuery(Class<?> returnType,String className,String sql,Object param) throws Throwable {
-        if (param instanceof Map){
-            sql = SelectSqlBuilder.setParam((Map) param, sql);
-            return executor.doQuery(returnType, sql, className);
-        }else if (param.getClass().getName().equals(className)){
+        if (param.getClass().getName().equals(className)){
             sql = SelectSqlBuilder.setParam(param, sql);
             return executor.doQuery(returnType, sql, className);
         }
+        sql = SelectSqlBuilder.setParam((Map) param, sql);
         return executor.doQuery(returnType, sql, className);
     }
 
     @Override
     public <T> T doInsert(Class<?> returnType, String className, String sql, Object param) throws Throwable {
         return null;
+    }
+
+    @Override
+    public <T> T selectByMap(Class<?> returnType, String className, Map<String, Object> param) throws Throwable {
+        Class<?> clazz = Class.forName(className);
+        String sql = SelectSqlBuilder.createSql(param, clazz.newInstance());
+        return executor.doQuery(returnType, sql, className);
     }
 
 }

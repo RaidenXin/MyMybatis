@@ -5,11 +5,13 @@ import com.huihuang.annotation.MySelect;
 import com.huihuang.annotation.Myinsert;
 import com.huihuang.mapper.BaseMapper;
 import com.huihuang.factory.MySqlSessionFactory;
+import com.huihuang.util.ObjectUtils;
 import com.huihuang.util.SqlUtils;
 import com.huihuang.util.StringUtils;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
+import org.omg.CORBA.OBJ_ADAPTER;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -35,26 +37,51 @@ public class SqlSessionManager {
     private static class SqlSessionInterceptor implements MethodInterceptor {
 
         private final String clazzName;
+        private final Map<String, Method> methodProxyMap;
+        private final MySqlSession session;
 
         public SqlSessionInterceptor(String className){
             this.clazzName = className;
+            this.session = MySqlSessionFactory.openSession();
+            this.methodProxyMap = new HashMap<>();
+            init();
+        }
+
+        private void init(){
+            Class<?> clazz = MySqlSession.class;
+            Method[] methods = clazz.getDeclaredMethods();
+            for (Method method : methods) {
+                methodProxyMap.put(method.getName(), method);
+            }
         }
 
         @Override
         public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-            MySqlSession session = MySqlSessionFactory.openSession();
             Class<?> returnType = method.getReturnType();
             if (method.isAnnotationPresent(Myinsert.class)){
                 //TODO 还未完成
             }else if (method.isAnnotationPresent(MySelect.class)){
-                MySelect mySelect = method.getDeclaredAnnotation(MySelect.class);
-                if (args.length == 1){
-                    return session.doQuery(returnType, clazzName, mySelect.value(), args[0]);
-                }else {
-                    return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args));
-                }
+                return doSelect(returnType, method, args);
             }
-            return new RuntimeException();
+            //获取通用的代理方法
+            Method proxy = methodProxyMap.get(method.getName());
+            if (null == proxy){
+                throw new RuntimeException();
+            }
+            //设置参数
+            Object[] param = new Object[3];
+            param[0] = returnType;
+            param[1] = clazzName;
+            param[2] = args[0];
+            return proxy.invoke(session, param);
+        }
+
+        private Object doSelect(Class<?> returnType,Method method, Object[] args)throws Throwable {
+            MySelect mySelect = method.getDeclaredAnnotation(MySelect.class);
+            if (args.length == 1){
+                return session.doQuery(returnType, clazzName, mySelect.value(), args[0]);
+            }
+            return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args));
         }
 
         private Map<String, Object> parameterMapping2Map(Method method,Object[] args){

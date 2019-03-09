@@ -5,7 +5,6 @@ public class User {
     private String id;
     private String name;
     private String age;
-    private String userName;
 
     public String getId() {
         return id;
@@ -29,14 +28,6 @@ public class User {
 
     public void setAge(String age) {
         this.age = age;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     @Override

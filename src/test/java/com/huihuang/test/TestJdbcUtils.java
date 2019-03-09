@@ -1,17 +1,21 @@
 package com.huihuang.test;
 
 import com.huihuang.annotation.MyParam;
+import com.huihuang.build.SelectSqlBuilder;
 import com.huihuang.mapper.BaseMapper;
 import test.User;
 import com.huihuang.session.SqlSessionManager;
 import org.junit.jupiter.api.Test;
+import test.UserMapper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestJdbcUtils {
 
@@ -68,5 +72,28 @@ public class TestJdbcUtils {
         int temp = a.intValue();
         field.set(a, b.intValue());
         field.set(b, temp);
+    }
+
+    @Test
+    public void testBuilder(){
+        User user  = new User();
+        Map<String, Object> map = new HashMap<>();
+        map.put("AGE", "12");
+        map.put("NAME", "张三");
+        System.err.println(SelectSqlBuilder.createSql(map, user));
+    }
+
+    @Test
+    public void testSelect(){
+        UserMapper userMapper = SqlSessionManager.getMapper(UserMapper.class);
+        Map<String, Object> map = new HashMap<>();
+        map.put("AGE", "12");
+        map.put("NAME", "张三");
+        List<User> list = userMapper.selectByMap(map);
+        System.err.println(list);
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("AGE", "12");
+        List<User> list2 = userMapper.selectByMap(map2);
+        System.err.println(list2);
     }
 }

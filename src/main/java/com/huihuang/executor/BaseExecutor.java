@@ -18,6 +18,7 @@ public class BaseExecutor implements Executor{
     public <T> T doQuery(Class<?> returnType, String sql, String className) throws Throwable{
         Connection connection = connectionPool.getConnection();
         Statement statement = connection.createStatement();
+        System.err.println(sql);
         ResultSet resultSet = statement.executeQuery(sql);
         if (returnType.equals(List.class)){
             List<Object> list = new ArrayList<>();

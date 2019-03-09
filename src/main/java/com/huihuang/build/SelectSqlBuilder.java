@@ -13,12 +13,16 @@ public final class SelectSqlBuilder extends  SqlBuilder{
 
     public static final String createSql(Object o){
         Map<String, Object> map = ObjectUtils.object2Map(o);
-        return createSelectSql(map);
+        return createSelectSql(map, getTableName(o));
+    }
+
+    private static String getTableName(Object object){
+        return object.getClass().getSimpleName().toLowerCase();
     }
 
     public static final String createSql(Map<String, Object> map,Object o){
         Map<String, Object> objectMap = ObjectUtils.object2Map(o);
-        StringBuilder builder = new StringBuilder(createSelectSql(objectMap));
+        StringBuilder builder = new StringBuilder(createSelectSql(objectMap, getTableName(o)));
         if (!map.isEmpty()){
             builder.append(WHERE);
             int i = 0;
@@ -27,8 +31,8 @@ public final class SelectSqlBuilder extends  SqlBuilder{
                     if (i != 0){
                         builder.append(BLANK_SPACE);
                         builder.append(AND);
-                        i++;
                     }
+                    i++;
                     builder.append(BLANK_SPACE);
                     builder.append(entry.getKey());
                     builder.append(BLANK_SPACE);
@@ -44,15 +48,16 @@ public final class SelectSqlBuilder extends  SqlBuilder{
     }
 
 
-    private static String createSelectSql(Map<String, Object> map){
+    private static String createSelectSql(Map<String, Object> map,String tableName){
         StringBuilder builder = new StringBuilder("SELECT");
+        builder.append(BLANK_SPACE);
         StringBuilder condition = new StringBuilder(WHERE);
         int i = 0,j = 0;
         for (Map.Entry<String, Object> e : map.entrySet()) {
             if (i != 0){
                 builder.append(",");
-                i++;
             }
+            i++;
             Object object = e.getValue();
             String key = SqlUtils.transformationOfFieldName(e.getKey());
             builder.append(key);
@@ -60,8 +65,8 @@ public final class SelectSqlBuilder extends  SqlBuilder{
                 if (j != 0){
                     condition.append(BLANK_SPACE);
                     condition.append(AND);
-                    j++;
                 }
+                j++;
                 condition.append(BLANK_SPACE);
                 condition.append(key);
                 condition.append(BLANK_SPACE);
@@ -72,6 +77,10 @@ public final class SelectSqlBuilder extends  SqlBuilder{
                 condition.append("'");
             }
         }
+        builder.append(BLANK_SPACE);
+        builder.append(FROM);
+        builder.append(BLANK_SPACE);
+        builder.append(tableName);
         builder.append(BLANK_SPACE);
         if (condition.lastIndexOf(BLANK_SPACE) > 5){
             builder.append(condition);

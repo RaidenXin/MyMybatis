@@ -8,8 +8,6 @@ import java.util.Map;
 
 public interface BaseMapper<T> {
 
-    public T selectById(@MyParam("id") Serializable id);
-
     public List<T> selectByMap(Map<String, Object> map);
 
 }
