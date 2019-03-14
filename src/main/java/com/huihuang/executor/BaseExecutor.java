@@ -21,25 +21,33 @@ public class BaseExecutor implements Executor{
         String sql = boundSql.getSql();
         String className = boundSql.getClassName();
         Connection connection = connectionPool.getConnection();
+        System.err.println(sql);
         PreparedStatement statement = connection.prepareStatement(sql);
         int index = 1;
-        for (Object param : boundSql.getParams()) {
-            statement.setObject(index, param);
+        Object[] params = boundSql.getParams();
+        for (Object param : params) {
+            statement.setObject(index++, param);
         }
-        ResultSet resultSet = statement.executeQuery();
-        if (boundSql.getReturnType().equals(List.class)){
-            List<Object> list = new ArrayList<>();
-            while (resultSet.next()){
-                Object instance = createInstance(resultSet, className);
-                list.add(instance);
+        if (params.length != 0){
+            ResultSet resultSet = statement.executeQuery();
+            if (boundSql.getReturnType().equals(List.class)){
+                List<Object> list = new ArrayList<>();
+                while (resultSet.next()){
+                    Object instance = createInstance(resultSet, className);
+                    list.add(instance);
+                }
+                return (T) list;
             }
-            return (T) list;
+            Object instance = null;
+            while (resultSet.next()){
+                instance = createInstance(resultSet, className);
+            }
+            return (T) instance;
         }
-        Object instance = null;
-        while (resultSet.next()){
-            instance = createInstance(resultSet, className);
+        if (boundSql.getReturnType().equals(List.class)){
+            return (T) new ArrayList<Object>(0);
         }
-        return (T) instance;
+        return null;
     }
 
     private Object createInstance(ResultSet resultSet,String className) throws Throwable{

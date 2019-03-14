@@ -75,15 +75,16 @@ public class SqlSessionManager {
 
         private Object doSelect(Class<?> returnType,Method method, Object[] args)throws Throwable {
             MySelect mySelect = method.getDeclaredAnnotation(MySelect.class);
+            String sql = mySelect.value();
             if (args.length == 1){
                 Object param = args[0];
                 if (param instanceof Map){
-                    return session.doQuery(returnType, clazzName, mySelect.value(), (Map<String, Object>) param);
+                    return session.doQuery(returnType, clazzName, sql, (Map<String, Object>) param);
                 }else if (param.getClass().getName().equals(clazzName)){
-                    return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(param));
+                    return session.doQuery(returnType, clazzName, sql, parameterMapping2Map(param));
                 }
             }
-            return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args));
+            return session.doQuery(returnType, clazzName, sql, parameterMapping2Map(method, args));
         }
 
         private Map<String, Object> parameterMapping2Map(Object param) throws Exception{
