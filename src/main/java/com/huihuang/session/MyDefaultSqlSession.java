@@ -16,7 +16,9 @@ public class MyDefaultSqlSession implements MySqlSession {
 
     @Override
     public <T> T doQuery(Class<?> returnType, String className, String sql, Map<String, Object> params) throws Throwable {
-        BoundSql boundSql= SelectSqlBuilder.setParam(params, sql);
+        BoundSql boundSql = SelectSqlBuilder.setParam(params, sql);
+        boundSql.setClassName(className);
+        boundSql.setReturnType(returnType);
         return executor.doQuery(boundSql);
     }
 
