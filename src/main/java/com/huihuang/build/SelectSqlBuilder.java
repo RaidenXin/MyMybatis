@@ -1,90 +1,108 @@
 package com.huihuang.build;
 
+import com.huihuang.mapping.BoundSql;
 import com.huihuang.util.ObjectUtils;
 import com.huihuang.util.SqlUtils;
-import com.huihuang.util.StringUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public final class SelectSqlBuilder extends  SqlBuilder{
 
+    private static final String SELECT = "SELECT";
+
     private static final Map<String, Map<String, Object>> classMappingMaps = new HashMap<>();
 
-    public static final String createSql(Object o){
-        Map<String, Object> map = ObjectUtils.object2Map(o);
-        return createSelectSql(map, getTableName(o));
+    public static final BoundSql createSql(Object o){
+        return createSelectSql(o);
     }
 
     private static String getTableName(Object object){
         return object.getClass().getSimpleName().toLowerCase();
     }
 
-    public static final String createSql(Map<String, Object> map,Object o){
+    public static final BoundSql createSql(Map<String, Object> map, Object o){
+        BoundSql boundSql = new BoundSql();
         Map<String, Object> objectMap = ObjectUtils.object2Map(o);
-        StringBuilder builder = new StringBuilder(createSelectSql(objectMap, getTableName(o)));
-        if (!map.isEmpty()){
-            builder.append(WHERE);
-            int i = 0;
-            for (Map.Entry<String, Object> entry : map.entrySet()) {
-                if (null != entry.getValue()){
-                    if (i != 0){
-                        builder.append(BLANK_SPACE);
-                        builder.append(AND);
-                    }
-                    i++;
-                    builder.append(BLANK_SPACE);
-                    builder.append(entry.getKey());
-                    builder.append(BLANK_SPACE);
-                    builder.append("=");
-                    builder.append(BLANK_SPACE);
-                    builder.append("'");
-                    builder.append(ObjectUtils.object2String(entry.getValue()));
-                    builder.append("'");
-                }
+        String sql = createSelectSql(objectMap, getTableName(o), boundSql) + splitJointParams(map.entrySet(), boundSql);
+        boundSql.setSql(sql);
+        return boundSql;
+    }
+
+    private static BoundSql createSelectSql(Object o){
+        BoundSql boundSql = new BoundSql();
+        Map<String, Object> map = ObjectUtils.object2Map(o);
+        StringBuilder builder = new StringBuilder(createSelectSql(map, getTableName(o), boundSql));
+        int i = 0;
+        Set<Map.Entry<String, Object>> entryList = new HashSet<>();
+        for (Map.Entry<String, Object> e : map.entrySet()) {
+            Object object = e.getValue();
+            if (null != object){
+                entryList.add(e);
             }
         }
-        return builder.toString();
+        builder.append(splitJointParams(entryList, boundSql));
+        boundSql.setSql(builder.toString());
+        return boundSql;
     }
 
 
-    private static String createSelectSql(Map<String, Object> map,String tableName){
-        StringBuilder builder = new StringBuilder("SELECT");
+    /**
+     * 组装查询语句头
+     * @param map
+     * @param tableName
+     * @param boundSql
+     * @return
+     */
+    private static String createSelectSql(Map<String, Object> map,String tableName,BoundSql boundSql){
+        StringBuilder builder = new StringBuilder(SELECT);
         builder.append(BLANK_SPACE);
-        StringBuilder condition = new StringBuilder(WHERE);
-        int i = 0,j = 0;
+        int i = 0;
         for (Map.Entry<String, Object> e : map.entrySet()) {
             if (i != 0){
                 builder.append(",");
             }
-            i++;
-            Object object = e.getValue();
+            i++;;
             String key = SqlUtils.transformationOfFieldName(e.getKey());
             builder.append(key);
-            if (null != object){
-                if (j != 0){
-                    condition.append(BLANK_SPACE);
-                    condition.append(AND);
-                }
-                j++;
-                condition.append(BLANK_SPACE);
-                condition.append(key);
-                condition.append(BLANK_SPACE);
-                condition.append("=");
-                condition.append(BLANK_SPACE);
-                condition.append("'");
-                condition.append(ObjectUtils.object2String(object));
-                condition.append("'");
-            }
         }
         builder.append(BLANK_SPACE);
         builder.append(FROM);
         builder.append(BLANK_SPACE);
         builder.append(tableName);
         builder.append(BLANK_SPACE);
-        if (condition.lastIndexOf(BLANK_SPACE) > 5){
-            builder.append(condition);
+        return builder.toString();
+    }
+
+    /**
+     * 组装参数
+     * @param params
+     * @param boundSql
+     * @return
+     */
+    private static String splitJointParams(Set<Map.Entry<String, Object>> params,BoundSql boundSql){
+        StringBuilder builder = new StringBuilder();
+        if (params.isEmpty()){
+            return builder.toString();
         }
+        Object[] param = new Object[params.size()];
+        builder.append(WHERE);
+        int i = 0;
+        for (Map.Entry<String, Object> entry : params) {
+            if (null != entry.getValue()){
+                if (i != 0){
+                    builder.append(BLANK_SPACE);
+                    builder.append(AND);
+                }
+                builder.append(BLANK_SPACE);
+                builder.append(entry.getKey());
+                builder.append(BLANK_SPACE);
+                builder.append("=");
+                builder.append(BLANK_SPACE);
+                builder.append("?");
+                param[i++] = entry.getValue();
+            }
+        }
+        boundSql.setParams(param);
         return builder.toString();
     }
 }

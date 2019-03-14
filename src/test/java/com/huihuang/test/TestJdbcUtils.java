@@ -16,6 +16,8 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TestJdbcUtils {
 
@@ -80,7 +82,17 @@ public class TestJdbcUtils {
         Map<String, Object> map = new HashMap<>();
         map.put("AGE", "12");
         map.put("NAME", "张三");
-        System.err.println(SelectSqlBuilder.createSql(map, user));
+        System.err.println(SelectSqlBuilder.createSql(map, user).getSql());
+    }
+
+
+    @Test
+    public void testSql(){
+        String sql = "SELECT * FROM user WHERE age = #{age} AND name = #{name}";
+        String[] strings = sql.split("\\#\\{|\\}");
+        for (String s : strings) {
+            System.err.println(s);
+        }
     }
 
     @Test

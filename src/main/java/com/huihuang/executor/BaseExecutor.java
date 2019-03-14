@@ -2,9 +2,11 @@ package com.huihuang.executor;
 
 import com.huihuang.connectionpool.ConnectionPool;
 import com.huihuang.factory.ConnectionPoolFactrory;
+import com.huihuang.mapping.BoundSql;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -15,12 +17,17 @@ public class BaseExecutor implements Executor{
     private ConnectionPool connectionPool = ConnectionPoolFactrory.newDefaultConnectionPool();
 
     @Override
-    public <T> T doQuery(Class<?> returnType, String sql, String className) throws Throwable{
+    public <T> T doQuery(BoundSql boundSql) throws Throwable{
+        String sql = boundSql.getSql();
+        String className = boundSql.getClassName();
         Connection connection = connectionPool.getConnection();
-        Statement statement = connection.createStatement();
-        System.err.println(sql);
-        ResultSet resultSet = statement.executeQuery(sql);
-        if (returnType.equals(List.class)){
+        PreparedStatement statement = connection.prepareStatement(sql);
+        int index = 1;
+        for (Object param : boundSql.getParams()) {
+            statement.setObject(index, param);
+        }
+        ResultSet resultSet = statement.executeQuery();
+        if (boundSql.getReturnType().equals(List.class)){
             List<Object> list = new ArrayList<>();
             while (resultSet.next()){
                 Object instance = createInstance(resultSet, className);
@@ -47,21 +54,24 @@ public class BaseExecutor implements Executor{
     }
 
     @Override
-    public Integer doInsert(String sql) throws Throwable{
+    public Integer doInsert(BoundSql boundSql) throws Throwable{
+        String sql = boundSql.getSql();
         Connection connection = connectionPool.getConnection();
         Statement statement = connection.createStatement();
         return statement.executeUpdate(sql);
     }
 
     @Override
-    public Integer doUpdate(String sql) throws Throwable{
+    public Integer doUpdate(BoundSql boundSql) throws Throwable{
+        String sql = boundSql.getSql();
         Connection connection = connectionPool.getConnection();
         Statement statement = connection.createStatement();
         return statement.executeUpdate(sql);
     }
 
     @Override
-    public void doDelete(String sql) throws Throwable{
+    public void doDelete(BoundSql boundSql) throws Throwable{
+        String sql = boundSql.getSql();
         Connection connection = connectionPool.getConnection();
         Statement statement = connection.createStatement();
         statement.executeUpdate(sql);

@@ -78,10 +78,7 @@ public class SqlSessionManager {
 
         private Object doSelect(Class<?> returnType,Method method, Object[] args)throws Throwable {
             MySelect mySelect = method.getDeclaredAnnotation(MySelect.class);
-            if (args.length == 1){
-                return session.doQuery(returnType, clazzName, mySelect.value(), args[0]);
-            }
-            return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args));
+            return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args), args);
         }
 
         private Map<String, Object> parameterMapping2Map(Method method,Object[] args){
@@ -90,8 +87,10 @@ public class SqlSessionManager {
             int index = 0;
             for (Annotation[] annotations : parameterAnnotations) {
                 for (Annotation annotation : annotations) {
-                    MyParam param = (MyParam) annotation;
-                    paramMap.put(SqlUtils.transformationOfFieldName(param.value()), args[++index]);
+                    if (annotation instanceof MyParam){
+                        MyParam param = (MyParam) annotation;
+                        paramMap.put(SqlUtils.transformationOfFieldName(param.value()), args[++index]);
+                    }
                 }
             }
             return paramMap;
