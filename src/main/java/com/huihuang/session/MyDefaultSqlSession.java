@@ -4,15 +4,7 @@ import com.huihuang.build.SelectSqlBuilder;
 import com.huihuang.executor.BaseExecutor;
 import com.huihuang.executor.Executor;
 import com.huihuang.mapping.BoundSql;
-import com.huihuang.util.ObjectUtils;
-import com.huihuang.util.StringUtils;
 
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,19 +15,8 @@ public class MyDefaultSqlSession implements MySqlSession {
     private static Executor executor = new BaseExecutor();
 
     @Override
-    public <T> T doQuery(Class<?> returnType, String className, String sql, List<String> paramNames,Object[] params) throws Throwable {
-        BoundSql boundSql;
-        if (params.length == 1){
-            Object param = params[0];
-            if (param instanceof Map){
-                boundSql = SelectSqlBuilder.setParam((Map) param, sql);
-                return executor.doQuery(boundSql);
-            }else if (param.getClass().getName().equals(className)){
-                boundSql = SelectSqlBuilder.setParam(param, sql);
-                return executor.doQuery(boundSql);
-            }
-        }
-        boundSql = SelectSqlBuilder.setParam(params, paramNames, sql);
+    public <T> T doQuery(Class<?> returnType, String className, String sql, Map<String, Object> params) throws Throwable {
+        BoundSql boundSql= SelectSqlBuilder.setParam(params, sql);
         return executor.doQuery(boundSql);
     }
 

@@ -3,15 +3,12 @@ package com.huihuang.session;
 import com.huihuang.annotation.MyParam;
 import com.huihuang.annotation.MySelect;
 import com.huihuang.annotation.Myinsert;
-import com.huihuang.mapper.BaseMapper;
+
 import com.huihuang.factory.MySqlSessionFactory;
-import com.huihuang.util.ObjectUtils;
 import com.huihuang.util.SqlUtils;
-import com.huihuang.util.StringUtils;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.omg.CORBA.OBJ_ADAPTER;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -78,7 +75,28 @@ public class SqlSessionManager {
 
         private Object doSelect(Class<?> returnType,Method method, Object[] args)throws Throwable {
             MySelect mySelect = method.getDeclaredAnnotation(MySelect.class);
-            return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args), args);
+            if (args.length == 1){
+                Object param = args[0];
+                if (param instanceof Map){
+                    return session.doQuery(returnType, clazzName, mySelect.value(), (Map<String, Object>) param);
+                }else if (param.getClass().getName().equals(clazzName)){
+                    return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(param));
+                }
+            }
+            return session.doQuery(returnType, clazzName, mySelect.value(), parameterMapping2Map(method, args));
+        }
+
+        private Map<String, Object> parameterMapping2Map(Object param) throws Exception{
+            Map<String, Object> paramMap = new HashMap<>();
+            Field[] fields = param.getClass().getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object value = field.get(param);
+                if (null != value){
+                    paramMap.put(field.getName(), value);
+                }
+            }
+            return paramMap;
         }
 
         private Map<String, Object> parameterMapping2Map(Method method,Object[] args){
