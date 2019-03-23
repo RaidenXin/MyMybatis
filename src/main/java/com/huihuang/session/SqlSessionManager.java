@@ -60,16 +60,31 @@ public class SqlSessionManager {
             }else if (method.isAnnotationPresent(MySelect.class)){
                 return doSelect(returnType, method, args);
             }
+            return proxyMethod(method, returnType, args);
+        }
+
+        /**
+         * 调用基类自带的方法
+         * @param method
+         * @param returnType
+         * @param args
+         * @return
+         * @throws InvocationTargetException
+         * @throws IllegalAccessException
+         */
+        private Object proxyMethod(Method method,Class<?> returnType,Object[] args) throws InvocationTargetException, IllegalAccessException {
             //获取通用的代理方法
             Method proxy = methodProxyMap.get(method.getName());
             if (null == proxy){
-                throw new RuntimeException();
+                throw new NullPointerException();
             }
             //设置参数
-            Object[] param = new Object[3];
+            Object[] param = new Object[2 + args.length];
             param[0] = returnType;
             param[1] = clazzName;
-            param[2] = args[0];
+            for (int i = 0; i < args.length; i++) {
+                param[i + 2] = args[i];
+            }
             return proxy.invoke(session, param);
         }
 
@@ -87,6 +102,12 @@ public class SqlSessionManager {
             return session.doQuery(returnType, clazzName, sql, parameterMapping2Map(method, args));
         }
 
+        /**
+         * 映射参数
+         * @param param
+         * @return
+         * @throws Exception
+         */
         private Map<String, Object> parameterMapping2Map(Object param) throws Exception{
             Map<String, Object> paramMap = new HashMap<>();
             Field[] fields = param.getClass().getDeclaredFields();

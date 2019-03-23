@@ -6,6 +6,16 @@ public class User {
     private String name;
     private String age;
 
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    private String alias;
+
     public String getId() {
         return id;
     }
@@ -32,6 +42,6 @@ public class User {
 
     @Override
     public String toString() {
-        return "ID:\t" + id + "\n" + "姓名:\t" + name + "\n" + "年龄:\t" + age;
+        return "ID:\t" + id + "\t姓名:\t" + name + "\t年龄:\t" + age + "\t别名:\t" + alias;
     }
 }

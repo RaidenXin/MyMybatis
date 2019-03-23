@@ -99,13 +99,15 @@ public class TestJdbcUtils {
     public void testSelect(){
         UserMapper userMapper = SqlSessionManager.getMapper(UserMapper.class);
         Map<String, Object> map = new HashMap<>();
-        map.put("AGE", "12");
-        map.put("NAME", "张三");
-        List<User> list = userMapper.selectByMap(map);
+        map.put("age", "12");
+        map.put("name", "张三");
+        List<User> list = userMapper.findAll(map);
         System.err.println(list);
         Map<String, Object> map2 = new HashMap<>();
         map2.put("AGE", "12");
         List<User> list2 = userMapper.selectByMap(map2);
         System.err.println(list2);
+        User user = userMapper.findOne(map);
+        System.err.println(user);
     }
 }
